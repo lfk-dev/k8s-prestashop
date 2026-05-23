@@ -1,0 +1,31 @@
+# Both prestashop and mysql are in the same namespace. This network policy targets mysql, and allows it only to access coreDNS.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mysql-networkpolicy
+  namespace: prestashop
+spec:
+  podSelector:
+    matchLabels:
+      name: mysql
+  policyTypes:
+    - Egress
+    - Ingress
+  # allow traffic from the same namespace only
+  ingress:
+    - from:
+        - podSelector: {}
+  # DB can only initiate connections to CoreDNS
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
