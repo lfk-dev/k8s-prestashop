@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: prestashop-statefulset
+  name: mysql-statefulset 
   namespace: prestashop
   labels:
     name: mysql

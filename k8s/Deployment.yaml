@@ -1,0 +1,49 @@
+# Prestashop deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prestashop
+  namespace: prestashop
+  labels:
+    app: prestashop
+spec:
+  selector:
+    matchLabels:
+      app: prestashop
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: prestashop
+    spec:
+      containers:
+        - image: prestashop/prestashop:9.1.1-apache
+          name: prestashop
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_SERVER
+              value: mysql-svc.prestashop.svc.cluster.local
+            - name: PS_FOLDER_ADMIN # related issue: https://github.com/PrestaShop/PrestaShop/issues/39414
+              value: "admin-dev"
+            - name: PS_FOLDER_INSTALL
+              value: "install937k9wjpb6qhm8iraje"
+            - name: PS_INSTALL_AUTO # automatically install the shop
+              value: "1"
+            - name: PS_ERASE_DB # remove existing table and install new one
+              value: "1"
+            - name: PS_INSTALL_DB
+              value: "1"
+              # PrestaShop redirects the initial request to the value of PS_DOMAIN.
+              # For NodePort access, PS_DOMAIN must exactly match the externally used node IP and port.
+              # Otherwise, PrestaShop redirects to a different URL and the back office/frontend may not load correctly.
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_PORT
+              value: "30333"
+            - name: PS_DOMAIN
+              value: "$(NODE_IP):$(NODE_PORT)"
