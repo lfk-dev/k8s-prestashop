@@ -27,7 +27,7 @@ if ! minikube profile list --output json |
   jq -e --arg profile "$MK_PROFILE" 'any(.valid[]; .Name == $profile)' >/dev/null
 then
     echo "Starting minikube cluster"
-    minikube start --cni=calico --driver=docker --nodes=1 --profile "$MK_PROFILE"
+    minikube start --cni=calico --driver=docker --nodes=1 --profile "$MK_PROFILE" --kubernetes-version=v1.34.0
     kubectl wait --for=condition=Ready nodes/"$MK_PROFILE" && echo "Node is ready"
 
     echo "Enabling addons"
